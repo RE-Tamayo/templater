@@ -1,0 +1,18 @@
+{
+    "name": "retamayo/templater",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Templater\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "RE-Tamayo",
+            "email": "rosas.emerjoe.tamayo@gmail.com"
+        }
+    ],
+    "minimum-stability": "alpha",
+    "require": {}
+}
