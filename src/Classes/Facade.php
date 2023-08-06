@@ -7,6 +7,8 @@
     use Templater\Classes\Renderer;
     use Templater\Classes\Watcher;
 
+    use Templater\Exceptions\TemplateNotFoundException;
+
     class Facade {
         private Compiler $compiler;
         private Cache $cache;
@@ -42,7 +44,7 @@
             $this->renderer->render($this->cache->locateCache($identifier)['path']);
         }
 
-        public function getTemplate(string $identifier): void {
+        private function getTemplate(string $identifier): void {
             $this->cache->freeCache();
             $cache = $this->cache->locateCache($identifier);
             if($cache['status']) {
@@ -59,14 +61,19 @@
                 }
             }
             elseif(!$cache['status']) {
-                echo "No Cache";
-                $code = $this->compile($identifier);
-                $this->cache($identifier, $code);
-                $this->render($identifier);   
+                if ($this->renderer->templateExist($identifier)) {
+                    echo "No Cache";
+                    $code = $this->compile($identifier);
+                    $this->cache($identifier, $code);
+                    $this->render($identifier);
+                } 
+                else {
+                    throw new TemplateNotFoundException();      
+                }
             }
         }
 
-        public function getLayout(string $identifier, string $layout): void {
+        private function getLayout(string $identifier, string $layout): void {
             $this->cache->freeCache();
             $cache = $this->cache->locateCache($identifier);
             if($cache['status']) {
@@ -84,10 +91,15 @@
                 }
             }
             elseif(!$cache['status']) {
-                echo "No Cache";
-                $code = $this->compiler->compileWithLayout($identifier, $layout);
-                $this->cache($identifier, $code);
-                $this->render($identifier);   
+                if($this->renderer->templateExist($identifier) || $this->renderer->layoutExist($layout)) {
+                    echo "No Cache";
+                    $code = $this->compiler->compileWithLayout($identifier, $layout);
+                    $this->cache($identifier, $code);
+                    $this->render($identifier);
+                }
+                else {
+                    throw new TemplateNotFoundException();
+                }   
             }
         }
 

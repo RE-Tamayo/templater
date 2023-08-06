@@ -2,7 +2,7 @@
 
     namespace Templater\Classes;
 
-    use Templater\Exceptions\CacheLocationException;
+    use Templater\Exceptions\CachingException;
 
     class Cache {
 
@@ -27,18 +27,17 @@
             return $dir;
         }
 
-        public function cacheFile(string $identifier, string $code): bool {
+        public function cacheFile(string $identifier, string $code): void {
             $identifier = str_replace(".php", "", $identifier);
             $cacheId = hash("sha256", $identifier);
             try {
                 $file = fopen($this->cacheDir.DIRECTORY_SEPARATOR.$cacheId.".php", "w+");
                 fwrite($file, $code);
                 fclose($file);
-            } catch (\Throwable $th) {
-                return false;
+            } catch (CachingException $th) {
+                throw new CachingException();
             }
-
-            return true;
+        
         }
 
         public function locateCache(string $identifier): array {
@@ -65,7 +64,7 @@
             }
         }
 
-        public function freeCache(int $cacheExpiration = 30): void {
+        public function freeCache(int $cacheExpiration = 3600): void {
             if (is_dir($this->cacheDir)) {
 
                 $path = $this->cacheDir.DIRECTORY_SEPARATOR."*.php";

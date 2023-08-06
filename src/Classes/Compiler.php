@@ -2,6 +2,8 @@
 
     namespace Templater\Classes;
 
+    use Templater\Exceptions\CompilerException;
+
     class Compiler {
 
         private string $templatesDir;
@@ -13,19 +15,27 @@
         }
 
         public function compile(string $identifier): string {
-            $identifier = str_replace(".", DIRECTORY_SEPARATOR, $identifier);
-            $file = file_get_contents($this->templatesDir.DIRECTORY_SEPARATOR.$identifier.".php");
+            try {
+                $identifier = str_replace(".", DIRECTORY_SEPARATOR, $identifier);
+                $file = file_get_contents($this->templatesDir.DIRECTORY_SEPARATOR.$identifier.".php");
+            } catch (CompilerException $th) {
+                throw new CompilerException();
+            }
             $compiledCode = $this->compileEchoes($file);
             return $compiledCode;
         }
 
         public function compileWithLayout(string $identifier, string $layout): string {
-            $identifier = str_replace(".", DIRECTORY_SEPARATOR, $identifier);
-            $file = file_get_contents($this->templatesDir.DIRECTORY_SEPARATOR.$identifier.".php");
+            try {
+                $identifier = str_replace(".", DIRECTORY_SEPARATOR, $identifier);
+                $file = file_get_contents($this->templatesDir.DIRECTORY_SEPARATOR.$identifier.".php");
 
-            $layout = str_replace(".", DIRECTORY_SEPARATOR, $layout);
-            $layoutFile = file_get_contents($this->templatesDir.DIRECTORY_SEPARATOR.$layout.".layout.php");
-
+                $layout = str_replace(".", DIRECTORY_SEPARATOR, $layout);
+                $layoutFile = file_get_contents($this->templatesDir.DIRECTORY_SEPARATOR.$layout.".layout.php");
+            } catch (CompilerException $th) {
+                throw new CompilerException();
+            }
+            
             $content = $this->compileEchoes($file);
 
             $layoutContent = $this->compileYield($content, $layoutFile);

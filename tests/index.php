@@ -1,10 +1,9 @@
 <?php
     include "../vendor/autoload.php";
 
-    use Templater\Classes\Facade;
+    use Templater\Templater;
 
-    $templater = new Facade();
+    $templater = new Templater();
 
-    $templater->getView("text", "test");
+    $templater->view("pages.index", "layouts.app");
 
-    // echo $templater->locateCache('test.php');
