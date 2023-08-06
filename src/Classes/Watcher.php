@@ -20,4 +20,15 @@
             }   
             return false;
         }
+
+        public function hasLayoutChanged(string $identifier, string $cachePath): bool {
+            $identifier = str_replace(".", DIRECTORY_SEPARATOR, $identifier);
+            $templateModificationTime = filemtime($this->templatesDir.DIRECTORY_SEPARATOR.$identifier.".layout.php");
+            $cacheModificationTime = filemtime($cachePath);
+
+            if($templateModificationTime > $cacheModificationTime) {
+                return true;
+            }   
+            return false;
+        }
     }

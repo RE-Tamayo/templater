@@ -5,6 +5,6 @@
 
     $templater = new Facade();
 
-    $templater->getView("a.afile");
+    $templater->getView("text", "test");
 
     // echo $templater->locateCache('test.php');

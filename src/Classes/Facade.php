@@ -20,38 +20,12 @@
             $this->watcher = new Watcher($this->renderer->templatesDir);
         }
 
-        public function getView(string $identifier): void {
-            //FREE CACHE
-            $this->cache->freeCache();
-            //CHECK IF CACHE EXISTS
-            $cache = $this->cache->locateCache($identifier);
-            if($cache['status']) {
-                //IF EXISTS
-                    //CHECK FOR CHANGES
-                    $hasChanged = $this->watcher->hasFileChanged($identifier, $cache['path']);
-                    if($hasChanged) {
-                        echo "Recompiled Successfully";
-                        //IF CHANGES
-                            //RECOMPILE
-                            $code = $this->compile($identifier);
-                            $this->cache($identifier, $code);
-                            //RENDER
-                            $this->render($identifier);  
-                    }
-                    elseif(!$hasChanged) {
-                        echo "No Changes";
-                        //IF NO CHANGES
-                            //RENDER
-                            $this->render($identifier);  
-                    }
+        public function getView(string $identifier, string $layout = ""): void {
+            if($layout === "") {
+                $this->getTemplate($identifier);
             }
-            elseif(!$cache['status']) {
-                echo "No Cache";
-                //IF NOT
-                    //CREATE CACHE
-                    $code = $this->compile($identifier);
-                    $this->cache($identifier, $code);
-                    $this->render($identifier);   
+            else {
+                $this->getLayout($identifier, $layout);
             }
         }
 
@@ -66,6 +40,55 @@
 
         private function render(string $identifier): void {
             $this->renderer->render($this->cache->locateCache($identifier)['path']);
+        }
+
+        public function getTemplate(string $identifier): void {
+            $this->cache->freeCache();
+            $cache = $this->cache->locateCache($identifier);
+            if($cache['status']) {
+                $hasChanged = $this->watcher->hasFileChanged($identifier, $cache['path']);
+                if($hasChanged) {
+                    echo "Recompiled Successfully";       
+                    $code = $this->compile($identifier);
+                    $this->cache($identifier, $code);
+                    $this->render($identifier);  
+                }
+                elseif(!$hasChanged) {
+                    echo "No Changes";
+                    $this->render($identifier);  
+                }
+            }
+            elseif(!$cache['status']) {
+                echo "No Cache";
+                $code = $this->compile($identifier);
+                $this->cache($identifier, $code);
+                $this->render($identifier);   
+            }
+        }
+
+        public function getLayout(string $identifier, string $layout): void {
+            $this->cache->freeCache();
+            $cache = $this->cache->locateCache($identifier);
+            if($cache['status']) {
+                $hasChanged = $this->watcher->hasFileChanged($identifier, $cache['path']);
+                $hasLayoutChanged = $this->watcher->hasLayoutChanged($layout, $cache['path']);
+                if($hasChanged || $hasLayoutChanged) {
+                    echo "Recompiled Successfully";
+                    $code = $this->compiler->compileWithLayout($identifier, $layout);
+                    $this->cache($identifier, $code);
+                    $this->render($identifier);  
+                }
+                elseif(!$hasChanged || !$hasLayoutChanged) {
+                    echo "No Changes";
+                    $this->render($identifier);  
+                }
+            }
+            elseif(!$cache['status']) {
+                echo "No Cache";
+                $code = $this->compiler->compileWithLayout($identifier, $layout);
+                $this->cache($identifier, $code);
+                $this->render($identifier);   
+            }
         }
 
     }
